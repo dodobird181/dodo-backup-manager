@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "dodo-backup-manager"
+version = "0.1.0"
+description = "A simple program for managing system backups with Rclone."
+authors = ["Samuel Morris <dodobird181@gmail.com>"]
+license = "The UNLICENSE"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyyaml = "^6.0.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

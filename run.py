@@ -19,8 +19,6 @@ from logging.handlers import TimedRotatingFileHandler
 from typing import Any, List
 from uuid import uuid4
 
-import systemd.daemon
-
 from get_backups_to_prune import should_prune
 
 Arguments = namedtuple(
@@ -470,13 +468,6 @@ class BackupRunner:
         logger.addHandler(file_handler)
         return logger
 
-    def _check_dependencies(self, tools):
-        for toolname in tools:
-            result = run("which", toolname, check=False).stdout
-            if result.strip() == "":
-                self.logger.error(f"Backup failed. Please install and configure: '{toolname}'.")
-                exit(1)
-
     def _parse_dirname(self, dirname: str) -> str:
         """
         Make sure the directory name exists on the machine. This method tries
@@ -497,8 +488,6 @@ class BackupRunner:
 
     def run(self) -> None:
         LIVE = bool(get_arguments().live)
-        BASIC_CLI_TOOLS = ["rclone", "zip", "yq", "pv"]
-        PG_CLI_TOOLS = ["pg_dump", "psql"]
         ZIP_DIR = f"{uuid4().hex}_tmp_backup_manager_workspace"
 
         self.logger.info("Starting backup...")
@@ -530,12 +519,6 @@ class BackupRunner:
                     exit(0)
             except self.SkipDir:
                 continue
-
-        # Check for basic linux dependencies and load the config file
-        self._check_dependencies(BASIC_CLI_TOOLS)
-        # Check if the user needs to install any Postgres specific cli tools
-        if any([db.provider == Config.Database.Provider.POSTGRES for db in config.databases]):
-            self._check_dependencies(PG_CLI_TOOLS)
 
         # Check database connections exist
         for db in config.databases:
